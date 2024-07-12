@@ -10,17 +10,17 @@ import java.time.Duration;
 
 @Configuration
 public class RestTemplateConfig {
-    private static final String GENIUS_API_KEY = Dotenv.load().get("GENIUS_API_KEY");
 
+    private static final Dotenv dotenv = Dotenv.configure()
+            .filename(".env")
+            .load();
+    public static final String SPOTIFY_CLIENT_ID = dotenv.get("SPOTIFY_CLIENT_ID");
+    public static final String SPOTIFY_CLIENT_SECRET = dotenv.get("SPOTIFY_CLIENT_SECRET");
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
                 .setConnectTimeout(Duration.ofSeconds(10))
                 .setReadTimeout(Duration.ofSeconds(10))
-                .additionalInterceptors((request, body, execution) -> {
-                    request.getHeaders().add("access_token", "Bearer " + GENIUS_API_KEY);
-                    return execution.execute(request, body);
-                })
                 .build();
     }
 }
