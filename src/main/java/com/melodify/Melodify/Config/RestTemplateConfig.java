@@ -14,8 +14,14 @@ public class RestTemplateConfig {
     private static final Dotenv dotenv = Dotenv.configure()
             .filename(".env")
             .load();
+    // Start Spotify API credentials
     public static final String SPOTIFY_CLIENT_ID = dotenv.get("SPOTIFY_CLIENT_ID");
     public static final String SPOTIFY_CLIENT_SECRET = dotenv.get("SPOTIFY_CLIENT_SECRET");
+    // End Spotify API credentials
+    
+    //Start Genius API credentials
+    public static final String GENIUS_API_KEY = dotenv.get("GENIUS_API_KEY");
+    //End Genius API credentials
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder

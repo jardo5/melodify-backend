@@ -22,7 +22,7 @@ public class SpotifyService {
     private static final String CLIENT_ID = RestTemplateConfig.SPOTIFY_CLIENT_ID;
     private static final String CLIENT_SECRET = RestTemplateConfig.SPOTIFY_CLIENT_SECRET;
     private static final String TOKEN_URL = "https://accounts.spotify.com/api/token";
-    private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks";
+    private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"; //Top 50 USA Playlist...They not like us
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
