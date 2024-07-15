@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Controllers;
 
+import com.melodify.Melodify.Models.Song;
 import com.melodify.Melodify.Services.GeniusService;
 import com.melodify.Melodify.Services.SpotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,5 +27,10 @@ public class SongController {
     @GetMapping("/search") // Search for Albums, Artists, Tracks via Genius API
     public List<Map<String, String>> search(@RequestParam String query) {
         return geniusService.search(query);
+    }
+
+    @GetMapping("/song")
+    public Song getSongDetails(@RequestParam String id) {
+        return geniusService.getSongDetails(id);
     }
 }

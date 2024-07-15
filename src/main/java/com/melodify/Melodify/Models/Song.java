@@ -4,20 +4,30 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
+
 @Data
 @Document
 public class Song {
     @Id
-    private String id;
-    private String title;
-    private String artist;
-    private String fullTitle;
-    private String geniusUrl;
-    private String imageUrl;
-    private String thumbnailUrl;
-    private String lyricsUrl;
-    private String spotifyUrl;
-    private String appleMusicUrl;
-    private String description;
+    private String id; //id
+    private String artist; //artist_names
+    private String fullTitle; //full_title
+    private String imageUrl; //song_art_image_url
+    private String appleMusicId; //apple_music_id
+    private String description; //description.
+    private String releaseDate; //release_date_with_abbreviated_month_for_display
+    private int pageViews; //stats.pageviews
+    private List<ExternalLink> externalLinks;
+
+    private Album album; //album
+    private Artist primaryArtist; //album.artist
+
+    @Data
+    public static class ExternalLink {
+        private String provider; //provider
+        private String url; //url
+    }
 }
 
