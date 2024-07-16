@@ -13,6 +13,7 @@ public class Song {
     @Id
     private String id; //id
     private String artist; //artist_names
+    private String title; //title
     private String fullTitle; //full_title
     private String imageUrl; //song_art_image_url
     private String appleMusicId; //apple_music_id
@@ -23,6 +24,10 @@ public class Song {
 
     private Album album; //album
     private Artist primaryArtist; //album.artist
+    
+    // For sentiment analysis
+    private String lyrics; //lyrics from MusixMatch API
+    private String sentiment; //sentiment
 
     @Data
     public static class ExternalLink {

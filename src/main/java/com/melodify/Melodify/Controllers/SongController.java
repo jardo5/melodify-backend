@@ -2,6 +2,7 @@ package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.Models.Song;
 import com.melodify.Melodify.Services.GeniusService;
+import com.melodify.Melodify.Services.MusixmatchService;
 import com.melodify.Melodify.Services.SpotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ public class SongController {
     
     @Autowired
     private GeniusService geniusService;
+    
+    @Autowired
+    private MusixmatchService musixmatchService;
 
     //TODO: FOR Carousel 
     @GetMapping("/top-tracks") // Get top tracks from Spotify API via Top 50 Album Playlist
@@ -32,5 +36,10 @@ public class SongController {
     @GetMapping("/song")
     public Song getSongDetails(@RequestParam String id) {
         return geniusService.getSongDetails(id);
+    }
+
+    @GetMapping("/lyrics")
+    public String getLyrics(@RequestParam String title, @RequestParam String artist) {
+        return musixmatchService.fetchLyrics(title, artist);
     }
 }

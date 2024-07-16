@@ -14,7 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GeniusService {
@@ -23,10 +26,12 @@ public class GeniusService {
     private static final String GENIUS_SONGS_URL = "https://api.genius.com/songs/";
 
     private final RestTemplate restTemplate;
+    private final MusixmatchService musixmatchService;
 
     @Autowired
-    public GeniusService(RestTemplate restTemplate) {
+    public GeniusService(RestTemplate restTemplate, MusixmatchService musixmatchService) {
         this.restTemplate = restTemplate;
+        this.musixmatchService = musixmatchService;
     }
 
     //Search for Tracks via Genius API for Search Bar
@@ -61,7 +66,6 @@ public class GeniusService {
         return results;
     }
 
-
     // Fetch detailed information of a song by ID (Contains Artist, Album, External Links)
     public Song getSongDetails(String songId) {
         String url = GENIUS_SONGS_URL + songId;
@@ -74,16 +78,15 @@ public class GeniusService {
                 url,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<JsonNode>() {
-                }
+                new ParameterizedTypeReference<JsonNode>() {}
         );
 
         JsonNode songData = response.getBody().path("response").path("song");
 
         Song song = new Song();
         song.setId(songData.path("id").asText());
-        song.setArtist(songData.path("artist_names").asText());
-        song.setFullTitle(songData.path("full_title").asText());
+        song.setArtist(cleanString(songData.path("artist_names").asText()));
+        song.setFullTitle(cleanString(songData.path("full_title").asText()));
         song.setImageUrl(songData.path("song_art_image_url").asText());
         song.setAppleMusicId(songData.path("apple_music_id").asText());
         song.setDescription(parseDescription(songData.path("description").path("dom").path("children")));
@@ -95,7 +98,8 @@ public class GeniusService {
         if (!albumNode.isMissingNode()) {
             Album album = new Album();
             album.setId(albumNode.path("id").asText());
-            album.setFullTitle(albumNode.path("full_title").asText());
+            song.setTitle(cleanString(songData.path("title").asText()));
+            album.setFullTitle(cleanString(albumNode.path("full_title").asText()));
             album.setCoverUrl(albumNode.path("cover_art_url").asText());
             album.setReleaseDate(albumNode.path("release_date").asText());
             song.setAlbum(album);
@@ -106,7 +110,7 @@ public class GeniusService {
         if (!primaryArtistNode.isMissingNode()) {
             Artist primaryArtist = new Artist();
             primaryArtist.setId(primaryArtistNode.path("id").asText());
-            primaryArtist.setName(primaryArtistNode.path("name").asText());
+            primaryArtist.setName(cleanString(primaryArtistNode.path("name").asText()));
             primaryArtist.setImageUrl(primaryArtistNode.path("image_url").asText());
             song.setPrimaryArtist(primaryArtist);
         }
@@ -122,10 +126,14 @@ public class GeniusService {
         }
         song.setExternalLinks(externalLinks);
 
+        // Fetch lyrics from Musixmatch
+        String lyrics = musixmatchService.fetchLyrics(song.getTitle(), song.getArtist());
+        song.setLyrics(lyrics);
+
         return song;
     }
 
-    // Recursive method to parse description text
+    // Recursive method to parse description text to aid getSongDetails method
     private String parseDescription(JsonNode children) {
         StringBuilder description = new StringBuilder();
 
@@ -133,11 +141,15 @@ public class GeniusService {
             if (child.has("children")) {
                 description.append(parseDescription(child.path("children")));
             } else if (child.isTextual()) {
-                description.append(child.asText());
+                description.append(cleanString(child.asText()));
             }
         }
 
         return description.toString();
     }
-}
 
+    // Helper to fix non-breaking space characters
+    private String cleanString(String input) {
+        return input.replace("\u00A0", " ");
+    }
+}
