@@ -8,6 +8,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 public class LyricsService {
@@ -23,20 +28,37 @@ public class LyricsService {
     public String fetchLyrics(String artist, String title) {
         String url = LYRICS_API_URL + artist + "/" + title;
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<JsonNode>() {}
-        );
+        try {
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<JsonNode>() {}
+            );
 
-        JsonNode responseBody = response.getBody();
-        if (responseBody != null && responseBody.has("error")) {
+            JsonNode responseBody = response.getBody();
+            if (responseBody != null && responseBody.has("error")) {
+                return "Lyrics not found";
+            }
+
+            String lyrics = responseBody.path("lyrics").asText();
+            return cleanLyrics(lyrics);
+        } catch (RestClientException e) {
             return "Lyrics not found";
         }
+    }
 
-        String lyrics = responseBody.path("lyrics").asText();
-        return cleanLyrics(lyrics);
+    public String fetchLyricsWithTimeout(String artist, String title, long timeout, TimeUnit unit) {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> fetchLyrics(artist, title));
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            return "Lyrics request timed out";
+        } catch (Exception e) {
+            return "Lyrics not found";
+        }
     }
 
     private String cleanLyrics(String lyrics) {
@@ -45,7 +67,7 @@ public class LyricsService {
             int index = lyrics.indexOf("\r\n");
             lyrics = lyrics.substring(index + 2);
         }
-        // Removes french text
+        // Removes French text
         lyrics = lyrics.replace("Paroles de la chanson", "").trim();
         return lyrics;
     }

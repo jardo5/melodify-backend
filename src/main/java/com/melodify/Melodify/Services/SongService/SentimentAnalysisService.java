@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 @Service
 public class SentimentAnalysisService {
 
@@ -39,10 +43,20 @@ public class SentimentAnalysisService {
         return responseObject.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
     }
 
+    public String analyzeSentimentWithTimeout(String lyrics, long timeout, TimeUnit unit) {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> analyzeSentiment(lyrics));
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            return "Sentiment analysis request timed out";
+        } catch (Exception e) {
+            return "Sentiment analysis failed";
+        }
+    }
+
     private String generatePrompt(String lyrics) {
         return SENTIMENT_PROMPT + "\n\nLyrics:\n" + lyrics;
     }
 }
-
-//TODO: Make sentiment analysis API call when a specific song is searched
-//TODO: Add error handling for when the sentiment analysis API is down
