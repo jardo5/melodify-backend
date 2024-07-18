@@ -25,11 +25,14 @@ public class GeniusService {
 
     private final RestTemplate restTemplate;
     private final LyricsService lyricsService;
+    
+    private final SentimentAnalysisService sentimentAnalysisService;
 
     @Autowired
-    public GeniusService(RestTemplate restTemplate, LyricsService lyricsService) {
+    public GeniusService(RestTemplate restTemplate, LyricsService lyricsService, SentimentAnalysisService sentimentAnalysisService) {
         this.restTemplate = restTemplate;
         this.lyricsService = lyricsService;
+        this.sentimentAnalysisService = sentimentAnalysisService;
     }
 
     //Search for Tracks via Genius API for Search Bar
@@ -132,6 +135,8 @@ public class GeniusService {
         } else {
             song.setLyrics(lyrics);
         }
+        
+        song.setSentiment(sentimentAnalysisService.analyzeSentiment(song.getLyrics()));
         
 
         return song;

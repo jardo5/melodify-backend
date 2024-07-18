@@ -43,3 +43,6 @@ public class SentimentAnalysisService {
         return SENTIMENT_PROMPT + "\n\nLyrics:\n" + lyrics;
     }
 }
+
+//TODO: Make sentiment analysis API call when a specific song is searched
+//TODO: Add error handling for when the sentiment analysis API is down
