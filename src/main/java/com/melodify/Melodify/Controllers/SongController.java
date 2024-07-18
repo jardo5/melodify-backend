@@ -1,6 +1,7 @@
 package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Models.TopTrack.Track;
 import com.melodify.Melodify.Services.*;
 import com.melodify.Melodify.Services.SongService.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class SongController {
 
     // Get top tracks from Spotify API via Top 50 Album Playlist
     @GetMapping("/top")
-    public List<Map<String, String>> getTopSongs() {
+    public List<Track> getTopSongs() {
         return spotifyService.getTopSongs();
     }
 

@@ -1,20 +1,24 @@
 package com.melodify.Melodify.Services;
 
 import com.melodify.Melodify.Config.RestTemplateConfig;
+import com.melodify.Melodify.Models.TopTrack;
+import com.melodify.Melodify.Repositories.TopTrackRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 @Service
 public class SpotifyService {
@@ -22,14 +26,16 @@ public class SpotifyService {
     private static final String CLIENT_ID = RestTemplateConfig.SPOTIFY_CLIENT_ID;
     private static final String CLIENT_SECRET = RestTemplateConfig.SPOTIFY_CLIENT_SECRET;
     private static final String TOKEN_URL = "https://accounts.spotify.com/api/token";
-    private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"; //Top 50 USA Playlist...They not like us
+    private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"; //Top 50 USA Playlist
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TopTrackRepository topTrackRepository;
 
     @Autowired
-    public SpotifyService(RestTemplate restTemplate) {
+    public SpotifyService(RestTemplate restTemplate, TopTrackRepository topTrackRepository) {
         this.restTemplate = restTemplate;
+        this.topTrackRepository = topTrackRepository;
     }
 
     public String getAccessToken() {
@@ -57,7 +63,26 @@ public class SpotifyService {
         return response.getBody().get("access_token").toString();
     }
 
-    public List<Map<String, String>> getTopSongs() {
+    public List<TopTrack.Track> getTopSongs() {
+        TopTrack topTrack = topTrackRepository.findById("top_tracks").orElse(null);
+        ZonedDateTime nowUTC = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime todayMidnightUTC = nowUTC.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+
+        if (topTrack == null || topTrack.getLastUpdated().isBefore(todayMidnightUTC.toLocalDateTime())) {
+            List<TopTrack.Track> topTracks = fetchTopTracksFromSpotify();
+            if (topTrack == null) {
+                topTrack = new TopTrack();
+                topTrack.setId("top_tracks");
+            }
+            topTrack.setTracks(topTracks);
+            topTrack.setLastUpdated(LocalDateTime.now(ZoneOffset.UTC));
+            topTrackRepository.save(topTrack);
+        }
+
+        return topTrack.getTracks();
+    }
+
+    private List<TopTrack.Track> fetchTopTracksFromSpotify() {
         String accessToken = getAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
@@ -76,7 +101,7 @@ public class SpotifyService {
             throw new RuntimeException("Failed to fetch top tracks: " + response.getStatusCode());
         }
 
-        List<Map<String, String>> topTracks = new ArrayList<>();
+        List<TopTrack.Track> topTracks = new ArrayList<>();
         List<Map<String, Object>> items = objectMapper.convertValue(response.getBody().get("items"), new TypeReference<>() {
         });
 
@@ -93,17 +118,17 @@ public class SpotifyService {
             });
             StringBuilder artistNames = new StringBuilder();
             for (Map<String, Object> artist : artistList) {
-                if (!artistNames.isEmpty()) {
+                if (artistNames.length() > 0) {
                     artistNames.append(", ");
                 }
                 artistNames.append(artist.get("name").toString());
             }
 
-            Map<String, String> songDetails = new LinkedHashMap<>();
-            songDetails.put("name", track.get("name").toString());
-            songDetails.put("artist", artistNames.toString());
+            TopTrack.Track songDetails = new TopTrack.Track();
+            songDetails.setName(track.get("name").toString());
+            songDetails.setArtist(artistNames.toString());
             if (!images.isEmpty()) {
-                songDetails.put("image", images.get(0).get("url").toString());
+                songDetails.setImage(images.get(0).get("url").toString());
             }
             topTracks.add(songDetails);
         }
@@ -111,6 +136,3 @@ public class SpotifyService {
         return topTracks;
     }
 }
-
-
-
