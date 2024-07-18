@@ -50,12 +50,7 @@ public class SongController {
     }
 
     @GetMapping("/analyze-sentiment")
-    public String analyzeSentiment(@RequestParam String text) {
-        try {
-            return sentimentAnalysisService.analyzeSentiment(text);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error occurred: " + e.getMessage();
-        }
+    public String analyzeSentiment(@RequestParam String lyrics) {
+        return sentimentAnalysisService.analyzeSentiment(lyrics);
     }
 }

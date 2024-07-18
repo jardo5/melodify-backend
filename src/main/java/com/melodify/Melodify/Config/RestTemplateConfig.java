@@ -28,11 +28,19 @@ public class RestTemplateConfig {
     public static final String SPOTIFY_CLIENT_SECRET = dotenv.get("SPOTIFY_CLIENT_SECRET");
     
     
-    //Genius API credentials
+    
     public static final String GENIUS_API_KEY = dotenv.get("GENIUS_API_KEY");
 
     public static final String LYRICS_API_URL = dotenv.get("LYRICS_API_URL");
-    //Start
+    
+    public static final String SENTIMENT_API_KEY = dotenv.get("SENTIMENT_API_KEY");
+    public static final String SENTIMENT_PROMPT = decodePrompt(dotenv.get("SENTIMENT_PROMPT"));
+
+
+    private static String decodePrompt(String encodedPrompt) {
+        return encodedPrompt.replace("\\n", "\n");
+    }
+
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder

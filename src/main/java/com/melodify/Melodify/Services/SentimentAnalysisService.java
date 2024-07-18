@@ -1,38 +1,45 @@
 package com.melodify.Melodify.Services;
 
-import ai.djl.Application;
-import ai.djl.ModelException;
-import ai.djl.huggingface.translator.TextClassificationTranslator;
-import ai.djl.huggingface.translator.TextClassificationTranslatorFactory;
-import ai.djl.inference.Predictor;
-import ai.djl.modality.Classifications;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.translate.TranslateException;
-import ai.djl.training.util.ProgressBar;
+import com.melodify.Melodify.Config.RestTemplateConfig;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.nio.file.Paths;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class SentimentAnalysisService {
 
-    private static final String MODEL_URL = "djl://ai.djl.huggingface.pytorch/distilbert-base-uncased-finetuned-sst-2-english";
+    private static final String API_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String SENTIMENT_API_KEY = RestTemplateConfig.SENTIMENT_API_KEY;
+    private static final String SENTIMENT_PROMPT = RestTemplateConfig.SENTIMENT_PROMPT;
 
-    public String analyzeSentiment(String text) throws IOException, ModelException, TranslateException {
-        Criteria<String, Classifications> criteria = Criteria.builder()
-                .setTypes(String.class, Classifications.class)
-                .optModelUrls(MODEL_URL)
-                .optTranslatorFactory(new TextClassificationTranslatorFactory())
-                .optProgress(new ProgressBar())
-                .build();
+    private final RestTemplate restTemplate;
 
-        try (ZooModel<String, Classifications> model = criteria.loadModel();
-             Predictor<String, Classifications> predictor = model.newPredictor()) {
-            Classifications result = predictor.predict(text);
-            return result.best().getClassName();
-        }
+    @Autowired
+    public SentimentAnalysisService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public String analyzeSentiment(String lyrics) {
+        String prompt = generatePrompt(lyrics);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("messages", new org.json.JSONArray().put(new JSONObject().put("role", "system").put("content", prompt)));
+        requestBody.put("max_tokens", 500);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        headers.set("Authorization", "Bearer " + SENTIMENT_API_KEY);
+
+        org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(requestBody.toString(), headers);
+
+        String response = restTemplate.postForObject(API_URL, entity, String.class);
+        JSONObject responseObject = new JSONObject(response);
+        return responseObject.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
+    }
+
+    private String generatePrompt(String lyrics) {
+        return SENTIMENT_PROMPT + "\n\nLyrics:\n" + lyrics;
     }
 }
-//Pretend you're a sentiment analysis for song lyrics. Your options are 
