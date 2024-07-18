@@ -1,4 +1,4 @@
-package com.melodify.Melodify.Services;
+package com.melodify.Melodify.Services.SongService;
 
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import org.json.JSONObject;

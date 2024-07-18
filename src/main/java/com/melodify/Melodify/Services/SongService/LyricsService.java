@@ -1,7 +1,6 @@
-package com.melodify.Melodify.Services;
+package com.melodify.Melodify.Services.SongService;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -41,12 +40,12 @@ public class LyricsService {
     }
 
     private String cleanLyrics(String lyrics) {
-        //Removes any text before the first \r\n
+        // Removes any text before the first \r\n
         if (lyrics.contains("\r\n")) {
             int index = lyrics.indexOf("\r\n");
             lyrics = lyrics.substring(index + 2);
         }
-        //Removes french text
+        // Removes french text
         lyrics = lyrics.replace("Paroles de la chanson", "").trim();
         return lyrics;
     }

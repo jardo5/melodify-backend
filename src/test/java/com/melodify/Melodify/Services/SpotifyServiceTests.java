@@ -66,7 +66,7 @@ public class SpotifyServiceTests {
         )).thenReturn(tracksResponse);
 
         // Call the method under test
-        List<Map<String, String>> topTracks = spotifyService.getTopTracks();
+        List<Map<String, String>> topTracks = spotifyService.getTopSongs();
 
         // Assertions
         assertNotNull(topTracks);

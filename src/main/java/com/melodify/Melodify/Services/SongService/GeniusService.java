@@ -1,11 +1,10 @@
-package com.melodify.Melodify.Services;
+package com.melodify.Melodify.Services.SongService;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
 import com.melodify.Melodify.Models.Song;
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -15,27 +14,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GeniusService {
+
     private static final String GENIUS_API_KEY = RestTemplateConfig.GENIUS_API_KEY;
     private static final String GENIUS_SEARCH_URL = "https://api.genius.com/search";
     private static final String GENIUS_SONGS_URL = "https://api.genius.com/songs/";
 
     private final RestTemplate restTemplate;
-    private final LyricsService lyricsService;
-    
-    private final SentimentAnalysisService sentimentAnalysisService;
 
     @Autowired
-    public GeniusService(RestTemplate restTemplate, LyricsService lyricsService, SentimentAnalysisService sentimentAnalysisService) {
+    public GeniusService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.lyricsService = lyricsService;
-        this.sentimentAnalysisService = sentimentAnalysisService;
     }
 
-    //Search for Tracks via Genius API for Search Bar
+    // Search for Tracks via Genius API for Search Bar
     public List<Map<String, String>> search(String query) {
         String url = GENIUS_SEARCH_URL + "?q=" + query;
 
@@ -47,8 +45,7 @@ public class GeniusService {
                 url,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<JsonNode>() {
-                }
+                new ParameterizedTypeReference<JsonNode>() {}
         );
 
         List<Map<String, String>> results = new ArrayList<>();
@@ -66,7 +63,6 @@ public class GeniusService {
 
         return results;
     }
-
 
     // Fetch detailed information of a song by ID (Contains Artist, Album, External Links)
     public Song getSongDetails(String songId) {
@@ -128,16 +124,6 @@ public class GeniusService {
             externalLinks.add(externalLink);
         }
         song.setExternalLinks(externalLinks);
-
-        String lyrics = lyricsService.fetchLyrics(song.getArtist(), song.getTitle());
-        if (lyrics.equals("Lyrics not found")) {
-            song.setLyrics("Lyrics Not Found Refer To Genius: " + songData.path("url").asText());
-        } else {
-            song.setLyrics(lyrics);
-        }
-        
-        song.setSentiment(sentimentAnalysisService.analyzeSentiment(song.getLyrics()));
-        
 
         return song;
     }

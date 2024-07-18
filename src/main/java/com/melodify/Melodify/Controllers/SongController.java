@@ -1,10 +1,8 @@
 package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.Models.Song;
-import com.melodify.Melodify.Services.GeniusService;
-import com.melodify.Melodify.Services.LyricsService;
-import com.melodify.Melodify.Services.SentimentAnalysisService;
-import com.melodify.Melodify.Services.SpotifyService;
+import com.melodify.Melodify.Services.*;
+import com.melodify.Melodify.Services.SongService.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,41 +14,33 @@ public class SongController {
 
     @Autowired
     private SpotifyService spotifyService;
-    
-    @Autowired
-    private GeniusService geniusService;
-    
-    @Autowired
-    private LyricsService lyricsService;
 
     @Autowired
-    private SentimentAnalysisService sentimentAnalysisService;
-    
-
+    private SongService songService;
 
     //TODO: FOR Carousel 
-    @GetMapping("/top-tracks") // Get top tracks from Spotify API via Top 50 Album Playlist
-    public List<Map<String, String>> getTopTracks() {
-        return spotifyService.getTopTracks();
+    @GetMapping("/top-songs") // Get top tracks from Spotify API via Top 50 Album Playlist
+    public List<Map<String, String>> getTopSongs() {
+        return spotifyService.getTopSongs();
     }
 
     @GetMapping("/search") // Search for Albums, Artists, Tracks via Genius API
     public List<Map<String, String>> search(@RequestParam String query) {
-        return geniusService.search(query);
+        return songService.searchGenius(query);
     }
 
-    @GetMapping("/song") // Pulls all metadata, including lyrics
+    @GetMapping("/song") // Pulls all metadata, lyrics, and sentiment analysis
     public Song getSongDetails(@RequestParam String id) {
-        return geniusService.getSongDetails(id);
+        return songService.getSongDetails(id);
     }
 
     @GetMapping("/lyrics") // Only pulls lyrics
     public String getLyrics(@RequestParam String artist, @RequestParam String title) {
-        return lyricsService.fetchLyrics(artist, title);
+        return songService.fetchLyrics(artist, title);
     }
 
-    @GetMapping("/analyze-sentiment")
+    @GetMapping("/analyze-sentiment") // Only analyzes sentiment
     public String analyzeSentiment(@RequestParam String lyrics) {
-        return sentimentAnalysisService.analyzeSentiment(lyrics);
+        return songService.analyzeSentiment(lyrics);
     }
 }

@@ -56,7 +56,7 @@ public class SpotifyService {
         return response.getBody().get("access_token").toString();
     }
 
-    public List<Map<String, String>> getTopTracks() {
+    public List<Map<String, String>> getTopSongs() {
         String accessToken = getAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
