@@ -46,7 +46,8 @@ public class SpotifyService {
                 TOKEN_URL,
                 HttpMethod.POST,
                 entity,
-                new ParameterizedTypeReference<Map<String, Object>>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -67,7 +68,8 @@ public class SpotifyService {
                 PLAYLIST_URL,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<Map<String, Object>>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -75,15 +77,20 @@ public class SpotifyService {
         }
 
         List<Map<String, String>> topTracks = new ArrayList<>();
-        List<Map<String, Object>> items = objectMapper.convertValue(response.getBody().get("items"), new TypeReference<List<Map<String, Object>>>() {});
+        List<Map<String, Object>> items = objectMapper.convertValue(response.getBody().get("items"), new TypeReference<>() {
+        });
 
         for (int i = 0; i < 50 && i < items.size(); i++) {
             Map<String, Object> item = items.get(i);
-            Map<String, Object> track = objectMapper.convertValue(item.get("track"), new TypeReference<Map<String, Object>>() {});
-            Map<String, Object> album = objectMapper.convertValue(track.get("album"), new TypeReference<Map<String, Object>>() {});
-            List<Map<String, Object>> images = objectMapper.convertValue(album.get("images"), new TypeReference<List<Map<String, Object>>>() {});
+            Map<String, Object> track = objectMapper.convertValue(item.get("track"), new TypeReference<>() {
+            });
+            Map<String, Object> album = objectMapper.convertValue(track.get("album"), new TypeReference<>() {
+            });
+            List<Map<String, Object>> images = objectMapper.convertValue(album.get("images"), new TypeReference<>() {
+            });
 
-            List<Map<String, Object>> artistList = objectMapper.convertValue(track.get("artists"), new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> artistList = objectMapper.convertValue(track.get("artists"), new TypeReference<>() {
+            });
             StringBuilder artistNames = new StringBuilder();
             for (Map<String, Object> artist : artistList) {
                 if (!artistNames.isEmpty()) {

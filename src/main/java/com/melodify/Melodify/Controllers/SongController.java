@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/songs")
 public class SongController {
 
     @Autowired
@@ -18,28 +19,32 @@ public class SongController {
     @Autowired
     private SongService songService;
 
-    //TODO: FOR Carousel 
-    @GetMapping("/top-songs") // Get top tracks from Spotify API via Top 50 Album Playlist
+    // Get top tracks from Spotify API via Top 50 Album Playlist
+    @GetMapping("/top")
     public List<Map<String, String>> getTopSongs() {
         return spotifyService.getTopSongs();
     }
 
-    @GetMapping("/search") // Search for Albums, Artists, Tracks via Genius API
+    // Search for Albums, Artists, Tracks via Genius API
+    @GetMapping("/search")
     public List<Map<String, String>> search(@RequestParam String query) {
         return songService.searchGenius(query);
     }
 
-    @GetMapping("/song") // Pulls all metadata, lyrics, and sentiment analysis
-    public Song getSongDetails(@RequestParam String id) {
+    // Pulls all metadata, lyrics, and sentiment analysis
+    @GetMapping("/{id}")
+    public Song getSongDetails(@PathVariable String id) {
         return songService.getSongDetails(id);
     }
 
-    @GetMapping("/lyrics") // Only pulls lyrics
+    // Only pulls lyrics
+    @GetMapping("/lyrics")
     public String getLyrics(@RequestParam String artist, @RequestParam String title) {
         return songService.fetchLyrics(artist, title);
     }
 
-    @GetMapping("/analyze-sentiment") // Only analyzes sentiment
+    // Only analyzes sentiment
+    @GetMapping("/sentiment")
     public String analyzeSentiment(@RequestParam String lyrics) {
         return songService.analyzeSentiment(lyrics);
     }

@@ -27,8 +27,6 @@ public class RestTemplateConfig {
     public static final String SPOTIFY_CLIENT_ID = dotenv.get("SPOTIFY_CLIENT_ID");
     public static final String SPOTIFY_CLIENT_SECRET = dotenv.get("SPOTIFY_CLIENT_SECRET");
     
-    
-    
     public static final String GENIUS_API_KEY = dotenv.get("GENIUS_API_KEY");
 
     public static final String LYRICS_API_URL = dotenv.get("LYRICS_API_URL");
@@ -39,6 +37,12 @@ public class RestTemplateConfig {
 
     private static String decodePrompt(String encodedPrompt) {
         return encodedPrompt.replace("\\n", "\n");
+    }
+
+    static {
+        // Load environment variables as system properties
+        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+        
     }
 
     @Bean

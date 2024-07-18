@@ -33,7 +33,8 @@ public class LyricsService {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<JsonNode>() {}
+                    new ParameterizedTypeReference<>() {
+                    }
             );
 
             JsonNode responseBody = response.getBody();

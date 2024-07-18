@@ -27,7 +27,7 @@ public class Song {
     private Artist primaryArtist; //album.artist
     
     // For sentiment analysis
-    private String lyrics; //lyrics from lyrics.ovh
+    private String lyrics; //lyrics
     private String sentiment; //sentiment
 
     @Data

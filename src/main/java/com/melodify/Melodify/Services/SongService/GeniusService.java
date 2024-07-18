@@ -45,7 +45,8 @@ public class GeniusService {
                 url,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<JsonNode>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         List<Map<String, String>> results = new ArrayList<>();
@@ -76,7 +77,8 @@ public class GeniusService {
                 url,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<JsonNode>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         JsonNode songData = response.getBody().path("response").path("song");
