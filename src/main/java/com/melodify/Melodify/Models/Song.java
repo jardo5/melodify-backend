@@ -20,13 +20,14 @@ public class Song {
     private String description; //description.
     private String releaseDate; //release_date_with_abbreviated_month_for_display
     private int pageViews; //stats.pageviews
+    private String geniusUrl; //url
     private List<ExternalLink> externalLinks;
 
     private Album album; //album
     private Artist primaryArtist; //album.artist
     
     // For sentiment analysis
-    private String lyrics; //lyrics from MusixMatch API
+    private String lyrics; //lyrics from lyrics.ovh
     private String sentiment; //sentiment
 
     @Data

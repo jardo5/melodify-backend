@@ -5,6 +5,7 @@ import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
 import com.melodify.Melodify.Models.Song;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -14,10 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GeniusService {
@@ -26,12 +24,12 @@ public class GeniusService {
     private static final String GENIUS_SONGS_URL = "https://api.genius.com/songs/";
 
     private final RestTemplate restTemplate;
-    private final MusixmatchService musixmatchService;
+    private final LyricsService lyricsService;
 
     @Autowired
-    public GeniusService(RestTemplate restTemplate, MusixmatchService musixmatchService) {
+    public GeniusService(RestTemplate restTemplate, LyricsService lyricsService) {
         this.restTemplate = restTemplate;
-        this.musixmatchService = musixmatchService;
+        this.lyricsService = lyricsService;
     }
 
     //Search for Tracks via Genius API for Search Bar
@@ -66,6 +64,7 @@ public class GeniusService {
         return results;
     }
 
+
     // Fetch detailed information of a song by ID (Contains Artist, Album, External Links)
     public Song getSongDetails(String songId) {
         String url = GENIUS_SONGS_URL + songId;
@@ -86,19 +85,20 @@ public class GeniusService {
         Song song = new Song();
         song.setId(songData.path("id").asText());
         song.setArtist(cleanString(songData.path("artist_names").asText()));
+        song.setTitle(cleanString(songData.path("title").asText()));
         song.setFullTitle(cleanString(songData.path("full_title").asText()));
         song.setImageUrl(songData.path("song_art_image_url").asText());
         song.setAppleMusicId(songData.path("apple_music_id").asText());
         song.setDescription(parseDescription(songData.path("description").path("dom").path("children")));
         song.setReleaseDate(songData.path("release_date_with_abbreviated_month_for_display").asText());
         song.setPageViews(songData.path("stats").path("pageviews").asInt());
+        song.setGeniusUrl(songData.path("url").asText());
 
         // Populate album details
         JsonNode albumNode = songData.path("album");
         if (!albumNode.isMissingNode()) {
             Album album = new Album();
             album.setId(albumNode.path("id").asText());
-            song.setTitle(cleanString(songData.path("title").asText()));
             album.setFullTitle(cleanString(albumNode.path("full_title").asText()));
             album.setCoverUrl(albumNode.path("cover_art_url").asText());
             album.setReleaseDate(albumNode.path("release_date").asText());
@@ -126,9 +126,13 @@ public class GeniusService {
         }
         song.setExternalLinks(externalLinks);
 
-        // Fetch lyrics from Musixmatch
-        String lyrics = musixmatchService.fetchLyrics(song.getTitle(), song.getArtist());
-        song.setLyrics(lyrics);
+        String lyrics = lyricsService.fetchLyrics(song.getArtist(), song.getTitle());
+        if (lyrics.equals("Lyrics not found")) {
+            song.setLyrics("Lyrics Not Found Refer To Genius: " + songData.path("url").asText());
+        } else {
+            song.setLyrics(lyrics);
+        }
+        
 
         return song;
     }

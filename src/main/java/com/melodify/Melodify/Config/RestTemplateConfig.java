@@ -31,7 +31,7 @@ public class RestTemplateConfig {
     //Genius API credentials
     public static final String GENIUS_API_KEY = dotenv.get("GENIUS_API_KEY");
 
-    public static final String MUSIXMATCH_API_KEY = dotenv.get("MUSIXMATCH_API_KEY");
+    public static final String LYRICS_API_URL = dotenv.get("LYRICS_API_URL");
     //Start
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
