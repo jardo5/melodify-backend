@@ -3,6 +3,7 @@ package com.melodify.Melodify.Controllers;
 import com.melodify.Melodify.Models.Song;
 import com.melodify.Melodify.Services.GeniusService;
 import com.melodify.Melodify.Services.LyricsService;
+import com.melodify.Melodify.Services.SentimentAnalysisService;
 import com.melodify.Melodify.Services.SpotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,9 @@ public class SongController {
     
     @Autowired
     private LyricsService lyricsService;
+
+    @Autowired
+    private SentimentAnalysisService sentimentAnalysisService;
     
 
 
@@ -43,5 +47,15 @@ public class SongController {
     @GetMapping("/lyrics") // Only pulls lyrics
     public String getLyrics(@RequestParam String artist, @RequestParam String title) {
         return lyricsService.fetchLyrics(artist, title);
+    }
+
+    @GetMapping("/analyze-sentiment")
+    public String analyzeSentiment(@RequestParam String text) {
+        try {
+            return sentimentAnalysisService.analyzeSentiment(text);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error occurred: " + e.getMessage();
+        }
     }
 }
