@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Services;
 
+import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.Models.TopTrack;
 import com.melodify.Melodify.Repositories.TopTrackRepository;
@@ -23,8 +24,8 @@ import java.util.Map;
 @Service
 public class SpotifyService {
 
-    private static final String CLIENT_ID = RestTemplateConfig.SPOTIFY_CLIENT_ID;
-    private static final String CLIENT_SECRET = RestTemplateConfig.SPOTIFY_CLIENT_SECRET;
+    private static final String CLIENT_ID = EnvironmentConfig.SPOTIFY_CLIENT_ID;
+    private static final String CLIENT_SECRET = EnvironmentConfig.SPOTIFY_CLIENT_SECRET;
     private static final String TOKEN_URL = "https://accounts.spotify.com/api/token";
     private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"; //Top 50 USA Playlist
 

@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Services.SongService;
 
+import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,8 @@ import java.util.concurrent.TimeoutException;
 public class SentimentAnalysisService {
 
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
-    private static final String SENTIMENT_API_KEY = RestTemplateConfig.SENTIMENT_API_KEY;
-    private static final String SENTIMENT_PROMPT = RestTemplateConfig.SENTIMENT_PROMPT;
+    private static final String SENTIMENT_API_KEY = EnvironmentConfig.SENTIMENT_API_KEY;
+    private static final String SENTIMENT_PROMPT = EnvironmentConfig.SENTIMENT_PROMPT;
 
     private final RestTemplate restTemplate;
 

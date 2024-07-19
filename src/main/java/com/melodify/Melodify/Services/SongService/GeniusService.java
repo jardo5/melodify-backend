@@ -1,6 +1,7 @@
 package com.melodify.Melodify.Services.SongService;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Service
 public class GeniusService {
 
-    private static final String GENIUS_API_KEY = RestTemplateConfig.GENIUS_API_KEY;
+    private static final String GENIUS_API_KEY = EnvironmentConfig.GENIUS_API_KEY;
     private static final String GENIUS_SEARCH_URL = "https://api.genius.com/search";
     private static final String GENIUS_SONGS_URL = "https://api.genius.com/songs/";
 

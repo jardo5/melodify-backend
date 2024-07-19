@@ -1,6 +1,7 @@
 package com.melodify.Melodify.Services.SongService;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Config.RestTemplateConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeoutException;
 @Service
 public class LyricsService {
 
-    private static final String LYRICS_API_URL = RestTemplateConfig.LYRICS_API_URL;
+    private static final String LYRICS_API_URL = EnvironmentConfig.LYRICS_API_URL;
     private final RestTemplate restTemplate;
 
     @Autowired
