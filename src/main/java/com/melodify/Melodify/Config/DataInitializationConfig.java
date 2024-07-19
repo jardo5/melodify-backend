@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration // Use this class to create a user with the role of admin
 public class DataInitializationConfig {
 
-    /* private final UserRepo userRepo;
+    private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -21,7 +21,7 @@ public class DataInitializationConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostConstruct
+    /* @PostConstruct
     public void init() {
         if (userRepo.findByUsername("admin").isEmpty()) {
             User admin = new User();

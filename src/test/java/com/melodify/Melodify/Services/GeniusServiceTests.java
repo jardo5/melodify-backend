@@ -36,7 +36,7 @@ public class GeniusServiceTests {
     @InjectMocks
     private GeniusService geniusService;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setUp() {

@@ -2,7 +2,6 @@ package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.DTOs.LoginRequest;
 import com.melodify.Melodify.DTOs.SignUpRequest;
-import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
