@@ -17,6 +17,9 @@ public class EnvironmentConfig {
     public static final String SENTIMENT_API_KEY = dotenv.get("SENTIMENT_API_KEY");
     public static final String SENTIMENT_PROMPT = decodePrompt(dotenv.get("SENTIMENT_PROMPT"));
     public static final String JWT_KEY = dotenv.get("JWT_KEY");
+    
+    public static final String DEV_FRONTEND_URL = dotenv.get("DEV_FRONTEND_URL");
+    public static final String PROD_FRONTEND_URL = dotenv.get("PROD_FRONTEND_URL");
 
     private static String decodePrompt(String encodedPrompt) {
         return encodedPrompt.replace("\\n", "\n");

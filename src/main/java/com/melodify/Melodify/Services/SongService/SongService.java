@@ -1,6 +1,7 @@
 package com.melodify.Melodify.Services.SongService;
 
 import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Services.GeniusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

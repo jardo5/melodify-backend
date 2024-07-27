@@ -1,9 +1,11 @@
 package com.melodify.Melodify.Services.SongService;
 
 import com.melodify.Melodify.Config.EnvironmentConfig;
-import com.melodify.Melodify.Config.RestTemplateConfig;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,18 +32,27 @@ public class SentimentAnalysisService {
 
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", "gpt-3.5-turbo");
-        requestBody.put("messages", new org.json.JSONArray().put(new JSONObject().put("role", "system").put("content", prompt)));
+        requestBody.put("messages", new JSONArray().put(new JSONObject().put("role", "system").put("content", prompt)));
         requestBody.put("max_tokens", 500);
 
-        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         headers.set("Authorization", "Bearer " + SENTIMENT_API_KEY);
 
-        org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(requestBody.toString(), headers);
+        HttpEntity<String> entity = new HttpEntity<>(requestBody.toString(), headers);
 
         String response = restTemplate.postForObject(API_URL, entity, String.class);
-        JSONObject responseObject = new JSONObject(response);
-        return responseObject.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
+        if (response != null) {
+            JSONObject responseObject = new JSONObject(response);
+            String content = responseObject.getJSONArray("choices")
+                    .getJSONObject(0)
+                    .getJSONObject("message")
+                    .getString("content")
+                    .trim();
+            return parseSentimentJson(content);
+        } else {
+            return "Failed to receive a response";
+        }
     }
 
     public String analyzeSentimentWithTimeout(String lyrics, long timeout, TimeUnit unit) {
@@ -59,5 +70,17 @@ public class SentimentAnalysisService {
 
     private String generatePrompt(String lyrics) {
         return SENTIMENT_PROMPT + "\n\nLyrics:\n" + lyrics;
+    }
+
+    private String parseSentimentJson(String jsonString) {
+        try {
+            // Parse the JSON string to ensure it is a valid JSON object
+            JSONObject sentimentJson = new JSONObject(jsonString);
+
+            // Convert JSONObject to a string (clean JSON without escape characters)
+            return sentimentJson.toString();
+        } catch (Exception e) {
+            return "Invalid JSON response";
+        }
     }
 }

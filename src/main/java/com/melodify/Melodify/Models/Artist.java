@@ -4,11 +4,17 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Data
 @Document
 public class Artist {
     @Id
-    private String id; //id
-    private String name; //name
-    private String imageUrl; //image_url
+    private String id;
+    private String name;
+    private String imageUrl;
+    private String description;
+    private String twitterName;
+    private String facebookName;
+    private String instagramName;
 }

@@ -1,8 +1,9 @@
-package com.melodify.Melodify.Services.SongService;
+package com.melodify.Melodify.Services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Config.RestTemplateConfig;
+import com.melodify.Melodify.DTOs.SongDTO;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
 import com.melodify.Melodify.Models.Song;
@@ -26,6 +27,8 @@ public class GeniusService {
     private static final String GENIUS_API_KEY = EnvironmentConfig.GENIUS_API_KEY;
     private static final String GENIUS_SEARCH_URL = "https://api.genius.com/search";
     private static final String GENIUS_SONGS_URL = "https://api.genius.com/songs/";
+    private static final String GENIUS_ARTIST_URL = "https://api.genius.com/artists/";
+    private static final String GENIUS_ARTIST_SONGS_URL = GENIUS_ARTIST_URL + "{artistId}/songs";
 
     private final RestTemplate restTemplate;
 
@@ -150,4 +153,64 @@ public class GeniusService {
     private String cleanString(String input) {
         return input.replace("\u00A0", " ");
     }
+
+    // Fetch detailed information of an artist by ID
+    public Artist getArtistDetails(String artistId) {
+        String url = GENIUS_ARTIST_URL + artistId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + GENIUS_API_KEY);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<JsonNode> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        JsonNode artistData = response.getBody().path("response").path("artist");
+
+        Artist artist = new Artist();
+        artist.setId(artistData.path("id").asText());
+        artist.setName(artistData.path("name").asText());
+        artist.setImageUrl(artistData.path("image_url").asText());
+        artist.setDescription(parseDescription(artistData.path("description").path("dom").path("children")));
+        artist.setTwitterName(artistData.path("twitter_name").asText());
+        artist.setFacebookName(artistData.path("facebook_name").asText());
+        artist.setInstagramName(artistData.path("instagram_name").asText());
+
+        return artist;
+    }
+
+    // Fetch top songs of an artist with a limit (sorted by popularity)
+    public List<SongDTO> getArtistTopSongs(String artistId, int limit) {
+        String url = GENIUS_ARTIST_SONGS_URL.replace("{artistId}", artistId) + "?sort=popularity&per_page=" + limit;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + GENIUS_API_KEY);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<JsonNode> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        List<SongDTO> topSongs = new ArrayList<>();
+        JsonNode songs = response.getBody().path("response").path("songs");
+
+        for (JsonNode song : songs) {
+            SongDTO songDTO = new SongDTO();
+            songDTO.setId(song.path("id").asText());
+            songDTO.setFullTitle(song.path("full_title").asText());
+            songDTO.setThumbnailUrl(song.path("song_art_image_thumbnail_url").asText());
+            songDTO.setReleaseDate(song.path("release_date_with_abbreviated_month_for_display").asText());
+            topSongs.add(songDTO);
+        }
+
+        return topSongs;
+    }
+    
 }
