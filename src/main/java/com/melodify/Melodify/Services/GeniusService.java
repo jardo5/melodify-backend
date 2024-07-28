@@ -2,7 +2,6 @@ package com.melodify.Melodify.Services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.melodify.Melodify.Config.EnvironmentConfig;
-import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.DTOs.SongDTO;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
@@ -149,9 +148,14 @@ public class GeniusService {
         return description.toString();
     }
 
-    // Helper to fix non-breaking space characters
+    // Helper to fix non-breaking space and zero-width space characters
     private String cleanString(String input) {
-        return input.replace("\u00A0", " ");
+        if (input == null) {
+            return "";
+        }
+        return input.replace("\u200B", "") // Remove ZWSP
+                .replace("\u00A0", " ") // Replace NBSP with standard space
+                .trim(); // Trim leading/trailing whitespace
     }
 
     // Fetch detailed information of an artist by ID
@@ -173,12 +177,12 @@ public class GeniusService {
 
         Artist artist = new Artist();
         artist.setId(artistData.path("id").asText());
-        artist.setName(artistData.path("name").asText());
+        artist.setName(cleanString(artistData.path("name").asText()));
         artist.setImageUrl(artistData.path("image_url").asText());
         artist.setDescription(parseDescription(artistData.path("description").path("dom").path("children")));
-        artist.setTwitterName(artistData.path("twitter_name").asText());
-        artist.setFacebookName(artistData.path("facebook_name").asText());
-        artist.setInstagramName(artistData.path("instagram_name").asText());
+        artist.setTwitterName(cleanString(artistData.path("twitter_name").asText()));
+        artist.setFacebookName(cleanString(artistData.path("facebook_name").asText()));
+        artist.setInstagramName(cleanString(artistData.path("instagram_name").asText()));
 
         return artist;
     }
@@ -204,13 +208,12 @@ public class GeniusService {
         for (JsonNode song : songs) {
             SongDTO songDTO = new SongDTO();
             songDTO.setId(song.path("id").asText());
-            songDTO.setFullTitle(song.path("full_title").asText());
-            songDTO.setThumbnailUrl(song.path("song_art_image_thumbnail_url").asText());
+            songDTO.setFullTitle(cleanString(song.path("full_title").asText()));
+            songDTO.setImageUrl(song.path("song_art_image_thumbnail_url").asText());
             songDTO.setReleaseDate(song.path("release_date_with_abbreviated_month_for_display").asText());
             topSongs.add(songDTO);
         }
 
         return topSongs;
     }
-    
 }

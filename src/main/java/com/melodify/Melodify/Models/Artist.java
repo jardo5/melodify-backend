@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Models;
 
+import com.melodify.Melodify.DTOs.SongDTO;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -7,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 @Data
-@Document
+@Document(collection = "Artist")
 public class Artist {
     @Id
     private String id;
@@ -17,4 +18,5 @@ public class Artist {
     private String twitterName;
     private String facebookName;
     private String instagramName;
+    private List<SongDTO> topSongs;
 }

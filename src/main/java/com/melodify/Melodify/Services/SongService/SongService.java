@@ -1,6 +1,7 @@
 package com.melodify.Melodify.Services.SongService;
 
 import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Repositories.SongRepo;
 import com.melodify.Melodify.Services.GeniusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,14 @@ public class SongService {
     private final LyricsService lyricsService;
     private final SentimentAnalysisService sentimentAnalysisService;
 
+    private final SongRepo songRepo;
+
     @Autowired
-    public SongService(GeniusService geniusService, LyricsService lyricsService, SentimentAnalysisService sentimentAnalysisService) {
+    public SongService(GeniusService geniusService, LyricsService lyricsService, SentimentAnalysisService sentimentAnalysisService, SongRepo songRepo) {
         this.geniusService = geniusService;
         this.lyricsService = lyricsService;
         this.sentimentAnalysisService = sentimentAnalysisService;
+        this.songRepo = songRepo;
     }
 
     public List<Map<String, String>> searchGenius(String query) {
@@ -28,18 +32,25 @@ public class SongService {
     }
 
     public Song getSongDetails(String songId) {
-        // Fetch song details from Genius
-        Song song = geniusService.getSongDetails(songId);
+        // Check if the song is in the database
+        Song song = songRepo.findById(songId).orElse(null);
+        if (song != null) {
+            return song;
+        }
+        
+        song = geniusService.getSongDetails(songId);
 
-        // Fetch lyrics for the song with timeout
+       
         String lyrics = lyricsService.fetchLyricsWithTimeout(song.getArtist(), song.getTitle(), 10, TimeUnit.SECONDS);
-        if (lyrics.equals("Lyrics request timed out") || lyrics.equals("Lyrics not found")) {
-            song.setLyrics("Lyrics Not Found Refer To Genius: " + song.getGeniusUrl());
+        if ("Lyrics request timed out".equals(lyrics) || "Lyrics not found".equals(lyrics)) {
+            song.setLyrics("Lyrics Not Found. Refer to Genius: " + song.getGeniusUrl());
         } else {
             song.setLyrics(lyrics);
             String sentiment = sentimentAnalysisService.analyzeSentimentWithTimeout(lyrics, 10, TimeUnit.SECONDS);
             song.setSentiment(sentiment);
         }
+        
+        songRepo.save(song);
 
         return song;
     }

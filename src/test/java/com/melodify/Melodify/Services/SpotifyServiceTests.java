@@ -2,7 +2,7 @@ package com.melodify.Melodify.Services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.melodify.Melodify.Models.TopTrack;
-import com.melodify.Melodify.Repositories.TopTrackRepository;
+import com.melodify.Melodify.Repositories.TopTrackRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class SpotifyServiceTests {
     private RestTemplate restTemplate;
 
     @Mock
-    private TopTrackRepository topTrackRepository;
+    private TopTrackRepo topTrackRepo;
 
     @InjectMocks
     private SpotifyService spotifyService;
@@ -41,7 +40,7 @@ public class SpotifyServiceTests {
 
     @BeforeEach
     public void setUp() {
-        spotifyService = new SpotifyService(restTemplate, topTrackRepository);
+        spotifyService = new SpotifyService(restTemplate, topTrackRepo);
     }
 
     @Test
@@ -51,7 +50,7 @@ public class SpotifyServiceTests {
         topTrack.setLastUpdated(LocalDateTime.now(ZoneOffset.UTC).minusDays(2));
         topTrack.setTracks(new ArrayList<>());
 
-        when(topTrackRepository.findById("top_tracks")).thenReturn(Optional.of(topTrack));
+        when(topTrackRepo.findById("top_tracks")).thenReturn(Optional.of(topTrack));
         when(restTemplate.exchange(eq("https://accounts.spotify.com/api/token"), eq(HttpMethod.POST), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .thenReturn(new ResponseEntity<>(createTokenResponse(), HttpStatus.OK));
         when(restTemplate.exchange(eq("https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
@@ -62,7 +61,7 @@ public class SpotifyServiceTests {
         assertNotNull(topSongs);
         assertEquals(2, topSongs.size());
 
-        verify(topTrackRepository, times(1)).save(any(TopTrack.class));
+        verify(topTrackRepo, times(1)).save(any(TopTrack.class));
     }
 
     @Test
@@ -75,7 +74,7 @@ public class SpotifyServiceTests {
         tracks.add(createTrack("Song 2", "Artist 2", "http://image2.jpg"));
         topTrack.setTracks(tracks);
 
-        when(topTrackRepository.findById("top_tracks")).thenReturn(Optional.of(topTrack));
+        when(topTrackRepo.findById("top_tracks")).thenReturn(Optional.of(topTrack));
 
         List<TopTrack.Track> topSongs = spotifyService.getTopSongs();
 

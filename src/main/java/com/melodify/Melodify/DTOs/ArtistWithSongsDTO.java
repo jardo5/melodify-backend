@@ -8,4 +8,9 @@ import java.util.List;
 public class ArtistWithSongsDTO {
     private Artist artist;
     private List<SongDTO> topSongs;
+
+    public ArtistWithSongsDTO(Artist artist, List<SongDTO> topSongs) {
+        this.artist = artist;
+        this.topSongs = topSongs;
+    }
 }

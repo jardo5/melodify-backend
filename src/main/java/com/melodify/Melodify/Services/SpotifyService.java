@@ -1,9 +1,8 @@
 package com.melodify.Melodify.Services;
 
 import com.melodify.Melodify.Config.EnvironmentConfig;
-import com.melodify.Melodify.Config.RestTemplateConfig;
 import com.melodify.Melodify.Models.TopTrack;
-import com.melodify.Melodify.Repositories.TopTrackRepository;
+import com.melodify.Melodify.Repositories.TopTrackRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +30,12 @@ public class SpotifyService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final TopTrackRepository topTrackRepository;
+    private final TopTrackRepo topTrackRepo;
 
     @Autowired
-    public SpotifyService(RestTemplate restTemplate, TopTrackRepository topTrackRepository) {
+    public SpotifyService(RestTemplate restTemplate, TopTrackRepo topTrackRepo) {
         this.restTemplate = restTemplate;
-        this.topTrackRepository = topTrackRepository;
+        this.topTrackRepo = topTrackRepo;
     }
 
     public String getAccessToken() {
@@ -65,7 +64,7 @@ public class SpotifyService {
     }
 
     public List<TopTrack.Track> getTopSongs() {
-        TopTrack topTrack = topTrackRepository.findById("top_tracks").orElse(null);
+        TopTrack topTrack = topTrackRepo.findById("top_tracks").orElse(null);
         ZonedDateTime nowUTC = ZonedDateTime.now(ZoneOffset.UTC);
         ZonedDateTime todayMidnightUTC = nowUTC.toLocalDate().atStartOfDay(ZoneOffset.UTC);
 
@@ -77,7 +76,7 @@ public class SpotifyService {
             }
             topTrack.setTracks(topTracks);
             topTrack.setLastUpdated(LocalDateTime.now(ZoneOffset.UTC));
-            topTrackRepository.save(topTrack);
+            topTrackRepo.save(topTrack);
         }
 
         return topTrack.getTracks();
