@@ -1,4 +1,4 @@
-package com.melodify.Melodify.Services;
+package com.melodify.Melodify.Services.ConnectedAccountsService.SpotifyService;
 
 import com.melodify.Melodify.Config.EnvironmentConfig;
 import com.melodify.Melodify.Models.TopTrack;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class SpotifyService {
+public class TopTrackSpotifyService {
 
     private static final String CLIENT_ID = EnvironmentConfig.SPOTIFY_CLIENT_ID;
     private static final String CLIENT_SECRET = EnvironmentConfig.SPOTIFY_CLIENT_SECRET;
@@ -33,7 +33,7 @@ public class SpotifyService {
     private final TopTrackRepo topTrackRepo;
 
     @Autowired
-    public SpotifyService(RestTemplate restTemplate, TopTrackRepo topTrackRepo) {
+    public TopTrackSpotifyService(RestTemplate restTemplate, TopTrackRepo topTrackRepo) {
         this.restTemplate = restTemplate;
         this.topTrackRepo = topTrackRepo;
     }
@@ -118,7 +118,7 @@ public class SpotifyService {
             });
             StringBuilder artistNames = new StringBuilder();
             for (Map<String, Object> artist : artistList) {
-                if (artistNames.length() > 0) {
+                if (!artistNames.isEmpty()) {
                     artistNames.append(", ");
                 }
                 artistNames.append(artist.get("name").toString());

@@ -1,11 +1,8 @@
 package com.melodify.Melodify.Config;
 
-import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Repositories.UserRepo;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
@@ -21,14 +18,16 @@ public class DataInitializationConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /* @PostConstruct
+   /* @PostConstruct
     public void init() {
         if (userRepo.findByUsername("admin").isEmpty()) {
             User admin = new User();
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("example_password"));
-            admin.setEmail("example@example.com");
-            admin.setRole("admin");
+            admin.setPassword(passwordEncoder.encode("password"));
+            admin.setEmail("example@gmail.com");
+            admin.setRole("ADMIN");
+            List<ConnectedAccountsService> connectedAccounts = new ArrayList<>();
+            admin.setConnectedAccounts(connectedAccounts);
             userRepo.save(admin);
         }
     } */

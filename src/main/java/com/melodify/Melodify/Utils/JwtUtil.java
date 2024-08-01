@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 
 @Component
 public class JwtUtil {
+    
+    Logger logger = Logger.getLogger(JwtUtil.class.getName());
     private final SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(EnvironmentConfig.JWT_KEY));
 
     public SecretKey getKey() {

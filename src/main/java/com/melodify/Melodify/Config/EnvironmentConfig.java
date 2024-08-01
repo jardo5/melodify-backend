@@ -12,6 +12,8 @@ public class EnvironmentConfig {
     
     public static final String SPOTIFY_CLIENT_ID = dotenv.get("SPOTIFY_CLIENT_ID");
     public static final String SPOTIFY_CLIENT_SECRET = dotenv.get("SPOTIFY_CLIENT_SECRET");
+    public static final String SPOTIFY_REDIRECT_URI = dotenv.get("SPOTIFY_REDIRECT_URI");
+    public static final String ENCRYPTION_SECRET_KEY = dotenv.get("ENCRYPTION_SECRET_KEY");
     public static final String GENIUS_API_KEY = dotenv.get("GENIUS_API_KEY");
     public static final String LYRICS_API_URL = dotenv.get("LYRICS_API_URL");
     public static final String SENTIMENT_API_KEY = dotenv.get("SENTIMENT_API_KEY");

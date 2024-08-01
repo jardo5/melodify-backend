@@ -3,6 +3,7 @@ package com.melodify.Melodify.Services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.melodify.Melodify.Models.TopTrack;
 import com.melodify.Melodify.Repositories.TopTrackRepo;
+import com.melodify.Melodify.Services.ConnectedAccountsService.SpotifyService.TopTrackSpotifyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class SpotifyServiceTests {
+public class TopTrackSpotifyServiceTests {
 
     @Mock
     private RestTemplate restTemplate;
@@ -34,13 +35,13 @@ public class SpotifyServiceTests {
     private TopTrackRepo topTrackRepo;
 
     @InjectMocks
-    private SpotifyService spotifyService;
+    private TopTrackSpotifyService topTrackSpotifyService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setUp() {
-        spotifyService = new SpotifyService(restTemplate, topTrackRepo);
+        topTrackSpotifyService = new TopTrackSpotifyService(restTemplate, topTrackRepo);
     }
 
     @Test
@@ -56,7 +57,7 @@ public class SpotifyServiceTests {
         when(restTemplate.exchange(eq("https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .thenReturn(new ResponseEntity<>(createSpotifyResponse(), HttpStatus.OK));
 
-        List<TopTrack.Track> topSongs = spotifyService.getTopSongs();
+        List<TopTrack.Track> topSongs = topTrackSpotifyService.getTopSongs();
 
         assertNotNull(topSongs);
         assertEquals(2, topSongs.size());
@@ -76,7 +77,7 @@ public class SpotifyServiceTests {
 
         when(topTrackRepo.findById("top_tracks")).thenReturn(Optional.of(topTrack));
 
-        List<TopTrack.Track> topSongs = spotifyService.getTopSongs();
+        List<TopTrack.Track> topSongs = topTrackSpotifyService.getTopSongs();
 
         assertNotNull(topSongs);
         assertEquals(2, topSongs.size());
