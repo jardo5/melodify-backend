@@ -1,10 +1,12 @@
 package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Models.TopTrack;
 import com.melodify.Melodify.Models.TopTrack.Track;
-import com.melodify.Melodify.Services.ConnectedAccountsService.SpotifyService.TopTrackSpotifyService;
+import com.melodify.Melodify.Services.ConnectedAccountsService.SpotifyService.SpotifyApiService;
 import com.melodify.Melodify.Services.SongService.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,15 +17,17 @@ import java.util.Map;
 public class SongController {
 
     @Autowired
-    private TopTrackSpotifyService topTrackSpotifyService;
+    private  SpotifyApiService spotifyApiService;
+
 
     @Autowired
     private SongService songService;
 
     // Get top tracks from Spotify API via Top 50 Album Playlist
     @GetMapping("/top")
-    public List<Track> getTopSongs() {
-        return topTrackSpotifyService.getTopSongs();
+    public ResponseEntity<List<TopTrack.Track>> getTopTracks() {
+        List<TopTrack.Track> topTracks = spotifyApiService.getTopSongs();
+        return ResponseEntity.ok(topTracks);
     }
 
     // Search for Albums, Artists, Tracks via Genius API

@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -19,4 +20,6 @@ public class User {
     private String email;
     private String role; //user or admin
     private List<ConnectedAccount> connectedAccounts;
+    private List<Playlist> playlists;
+    private Date lastPlaylistSync;
 }
