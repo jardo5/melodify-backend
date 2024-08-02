@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 @Component
 public class JwtUtil {
-    
+
     Logger logger = Logger.getLogger(JwtUtil.class.getName());
     private final SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(EnvironmentConfig.JWT_KEY));
 
@@ -55,7 +55,7 @@ public class JwtUtil {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        String token = Jwts.builder()
+        return Jwts.builder()
                 .claims()
                 .add(claims)
                 .and()
@@ -64,11 +64,19 @@ public class JwtUtil {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 12)) // 12 hours expiration
                 .signWith(key)
                 .compact();
-        return token;
     }
 
     public Boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    // New method to extract token from bearer token string
+    public String extractToken(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        } else {
+            throw new RuntimeException("JWT Token is missing or not valid");
+        }
     }
 }

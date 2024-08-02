@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Data
 @Document(collection = "Song")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Song {
     @Id
     private String id; //id
@@ -31,6 +33,7 @@ public class Song {
     private String sentiment; //sentiment
 
     @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ExternalLink {
         private String provider; //provider
         private String url; //url
