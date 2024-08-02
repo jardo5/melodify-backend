@@ -60,6 +60,12 @@ public class UserService implements UserDetailsService {
         newUser.setEmail(email);
         newUser.setPassword(passwordEncoder.encode(password));
         newUser.setRole("USER");
+        newUser.setConnectedAccounts(new ArrayList<>());
+        newUser.setPlaylists(new ArrayList<>());
+        newUser.setLastPlaylistSync(null);
+        newUser.setDislikedSongs(new ArrayList<>());
+        newUser.setLikedSongs(new ArrayList<>());
+        
 
         User savedUser = userRepo.save(newUser);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
