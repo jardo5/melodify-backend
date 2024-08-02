@@ -115,4 +115,31 @@ public class UserService implements UserDetailsService {
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
         );
     }
+
+    public ResponseEntity<?> getUserInfo(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7).trim(); // Remove 'Bearer ' prefix and trim any whitespace
+        } else {
+            return new ResponseEntity<>("Invalid token", HttpStatus.UNAUTHORIZED);
+        }
+
+        String username = jwtUtil.extractUsername(token);
+        Optional<User> userOptional = userRepo.findByUsername(username);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // Removes unnecessary fields from the response
+            User userInfo = new User();
+            userInfo.setId(user.getId());
+            userInfo.setUsername(user.getUsername());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setRole(user.getRole());
+            userInfo.setConnectedAccounts(user.getConnectedAccounts());
+
+            return new ResponseEntity<>(userInfo, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
