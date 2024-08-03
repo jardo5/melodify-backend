@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/songs")
@@ -41,6 +42,14 @@ public class SongController {
     public Song getSongDetails(@PathVariable String id) {
         return songService.getSongDetails(id);
     }
+
+    // Pulls all metadata, lyrics, and sentiment analysis for multiple songs (Batch Request)
+    @PostMapping("/batch")
+    public ResponseEntity<List<Song>> getSongDetailsBatch(@RequestBody List<String> ids) {
+        List<Song> songs = songService.getSongDetailsBatch(ids);
+        return ResponseEntity.ok(songs);
+    }
+
 
     // Only pulls lyrics
     @GetMapping("/lyrics")

@@ -37,10 +37,10 @@ public class SongService {
         if (song != null) {
             return song;
         }
-        
+
         song = geniusService.getSongDetails(songId);
 
-       
+
         String lyrics = lyricsService.fetchLyricsWithTimeout(song.getArtist(), song.getTitle(), 10, TimeUnit.SECONDS);
         if ("Lyrics request timed out".equals(lyrics) || "Lyrics not found".equals(lyrics)) {
             song.setLyrics("Lyrics Not Found. Refer to Genius: " + song.getGeniusUrl());
@@ -49,12 +49,18 @@ public class SongService {
             String sentiment = sentimentAnalysisService.analyzeSentimentWithTimeout(lyrics, 10, TimeUnit.SECONDS);
             song.setSentiment(sentiment);
         }
-        
+
         songRepo.save(song);
 
         return song;
     }
     
+    public List<Song>getSongDetailsBatch(List<String> songIds) {
+        return songIds.stream()
+                .map(this::getSongDetails)
+                .toList();
+    }
+
     //For Separate Endpoints
     public String fetchLyrics(String artist, String title) {
         return lyricsService.fetchLyrics(artist, title);

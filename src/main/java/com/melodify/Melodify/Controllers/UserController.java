@@ -31,7 +31,7 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         return userService.login(loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
     }
-    
+
     @GetMapping("/info")
     public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String token) {
         return userService.getUserInfo(token);
@@ -50,5 +50,4 @@ public class UserController {
         Map<String, String> response = userService.dislikeSong(userId, songId);
         return ResponseEntity.ok(response);
     }
-
 }

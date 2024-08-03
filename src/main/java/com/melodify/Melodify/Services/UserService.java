@@ -1,7 +1,8 @@
 package com.melodify.Melodify.Services;
 
-import com.melodify.Melodify.Models.Song;
+
 import com.melodify.Melodify.Models.User;
+import com.melodify.Melodify.Repositories.SongRepo;
 import com.melodify.Melodify.Repositories.UserRepo;
 import com.melodify.Melodify.Utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class UserService implements UserDetailsService {
         newUser.setLastPlaylistSync(null);
         newUser.setDislikedSongs(new ArrayList<>());
         newUser.setLikedSongs(new ArrayList<>());
-        
+
 
         User savedUser = userRepo.save(newUser);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
@@ -139,6 +140,10 @@ public class UserService implements UserDetailsService {
             userInfo.setEmail(user.getEmail());
             userInfo.setRole(user.getRole());
             userInfo.setConnectedAccounts(user.getConnectedAccounts());
+            userInfo.setPlaylists(user.getPlaylists());
+            userInfo.setLastPlaylistSync(user.getLastPlaylistSync());
+            userInfo.setDislikedSongs(user.getDislikedSongs());
+            userInfo.setLikedSongs(user.getLikedSongs());
 
             return new ResponseEntity<>(userInfo, HttpStatus.OK);
         } else {
@@ -193,5 +198,4 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("User not found");
         }
     }
-
 }
