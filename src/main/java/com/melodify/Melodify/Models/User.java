@@ -22,6 +22,6 @@ public class User {
     private List<ConnectedAccount> connectedAccounts;
     private List<Playlist> playlists;
     private Date lastPlaylistSync;
-    private List<Song> dislikedSongs;
-    private List<Song> likedSongs;
+    private List<String> dislikedSongs;
+    private List<String> likedSongs;
 }

@@ -2,10 +2,14 @@ package com.melodify.Melodify.Controllers;
 
 import com.melodify.Melodify.DTOs.LoginRequest;
 import com.melodify.Melodify.DTOs.SignUpRequest;
+import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Services.SongService.SongService;
 import com.melodify.Melodify.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -32,4 +36,19 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String token) {
         return userService.getUserInfo(token);
     }
+
+    @PostMapping("/{userId}/like")
+    public ResponseEntity<?> likeSong(@PathVariable String userId, @RequestBody Map<String, String> payload) {
+        String songId = payload.get("songId");
+        Map<String, String> response = userService.likeSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{userId}/dislike")
+    public ResponseEntity<?> dislikeSong(@PathVariable String userId, @RequestBody Map<String, String> payload) {
+        String songId = payload.get("songId");
+        Map<String, String> response = userService.dislikeSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
+
 }

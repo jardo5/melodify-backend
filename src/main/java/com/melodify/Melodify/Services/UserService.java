@@ -1,5 +1,6 @@
 package com.melodify.Melodify.Services;
 
+import com.melodify.Melodify.Models.Song;
 import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Repositories.UserRepo;
 import com.melodify.Melodify.Utils.JwtUtil;
@@ -13,10 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -145,6 +143,54 @@ public class UserService implements UserDetailsService {
             return new ResponseEntity<>(userInfo, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public Map<String, String> likeSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (user.getLikedSongs().contains(songId)) {
+                throw new RuntimeException("Song is already liked");
+            }
+
+            if (user.getDislikedSongs().contains(songId)) {
+                user.getDislikedSongs().remove(songId);
+            }
+
+            user.getLikedSongs().add(songId);
+            userRepo.save(user);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song liked successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+
+    public Map<String, String> dislikeSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (user.getDislikedSongs().contains(songId)) {
+                throw new RuntimeException("Song is already disliked");
+            }
+
+            if (user.getLikedSongs().contains(songId)) {
+                user.getLikedSongs().remove(songId);
+            }
+
+            user.getDislikedSongs().add(songId);
+            userRepo.save(user);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song disliked successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
         }
     }
 
