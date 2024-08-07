@@ -50,6 +50,13 @@ public class UserController {
         Map<String, String> response = userService.dislikeSong(userId, songId);
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/{userId}/save")
+    public ResponseEntity<?> saveSong(@PathVariable String userId, @RequestBody Map<String, String> payload) {
+        String songId = payload.get("songId");
+        Map<String, String> response = userService.saveSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
 
     @DeleteMapping("/{userId}/liked/{songId}")
     public ResponseEntity<?> removeLikedSong(@PathVariable String userId, @PathVariable String songId) {
@@ -60,6 +67,12 @@ public class UserController {
     @DeleteMapping("/{userId}/disliked/{songId}")
     public ResponseEntity<?> removeDislikedSong(@PathVariable String userId, @PathVariable String songId) {
         Map<String, String> response = userService.removeDislikedSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
+    
+    @DeleteMapping("/{userId}/saved/{songId}")
+    public ResponseEntity<?> removeSavedSong(@PathVariable String userId, @PathVariable String songId) {
+        Map<String, String> response = userService.removeSavedSong(userId, songId);
         return ResponseEntity.ok(response);
     }
 }

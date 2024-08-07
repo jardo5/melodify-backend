@@ -24,4 +24,5 @@ public class User {
     private Date lastPlaylistSync;
     private List<String> dislikedSongs;
     private List<String> likedSongs;
+    private List<String> savedSongs;
 }

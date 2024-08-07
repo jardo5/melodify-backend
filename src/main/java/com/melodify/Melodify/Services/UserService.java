@@ -144,6 +144,7 @@ public class UserService implements UserDetailsService {
             userInfo.setLastPlaylistSync(user.getLastPlaylistSync());
             userInfo.setDislikedSongs(user.getDislikedSongs());
             userInfo.setLikedSongs(user.getLikedSongs());
+            userInfo.setSavedSongs(user.getSavedSongs());
 
             return new ResponseEntity<>(userInfo, HttpStatus.OK);
         } else {
@@ -199,6 +200,26 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public Map<String, String> saveSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (user.getSavedSongs().contains(songId)) {
+                throw new RuntimeException("Song is already saved");
+            }
+            
+            user.getSavedSongs().add(songId);
+            userRepo.save(user);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song saved successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+
     public Map<String, String> removeLikedSong(String userId, String songId) {
         Optional<User> optionalUser = userRepo.findById(userId);
         if (optionalUser.isPresent()) {
@@ -233,6 +254,26 @@ public class UserService implements UserDetailsService {
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "Song removed from disliked songs successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+    
+    public Map<String, String> removeSavedSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (!user.getSavedSongs().contains(songId)) {
+                throw new RuntimeException("Song not found in saved songs");
+            }
+
+            user.getSavedSongs().remove(songId);
+            userRepo.save(user);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song removed from saved songs successfully");
             return response;
         } else {
             throw new RuntimeException("User not found");
