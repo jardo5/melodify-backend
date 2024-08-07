@@ -50,4 +50,16 @@ public class UserController {
         Map<String, String> response = userService.dislikeSong(userId, songId);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{userId}/liked/{songId}")
+    public ResponseEntity<?> removeLikedSong(@PathVariable String userId, @PathVariable String songId) {
+        Map<String, String> response = userService.removeLikedSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{userId}/disliked/{songId}")
+    public ResponseEntity<?> removeDislikedSong(@PathVariable String userId, @PathVariable String songId) {
+        Map<String, String> response = userService.removeDislikedSong(userId, songId);
+        return ResponseEntity.ok(response);
+    }
 }

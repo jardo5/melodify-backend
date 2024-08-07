@@ -198,4 +198,44 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("User not found");
         }
     }
+
+    public Map<String, String> removeLikedSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (!user.getLikedSongs().contains(songId)) {
+                throw new RuntimeException("Song not found in liked songs");
+            }
+
+            user.getLikedSongs().remove(songId);
+            userRepo.save(user);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song removed from liked songs successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+
+    public Map<String, String> removeDislikedSong(String userId, String songId) {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (!user.getDislikedSongs().contains(songId)) {
+                throw new RuntimeException("Song not found in disliked songs");
+            }
+
+            user.getDislikedSongs().remove(songId);
+            userRepo.save(user);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Song removed from disliked songs successfully");
+            return response;
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
 }
