@@ -6,6 +6,8 @@ import com.melodify.Melodify.DTOs.SongDTO;
 import com.melodify.Melodify.Models.Album;
 import com.melodify.Melodify.Models.Artist;
 import com.melodify.Melodify.Models.Song;
+import com.melodify.Melodify.Repositories.SongRepo;
+import com.melodify.Melodify.Utils.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GeniusService {
@@ -30,11 +33,17 @@ public class GeniusService {
     private static final String GENIUS_ARTIST_SONGS_URL = GENIUS_ARTIST_URL + "{artistId}/songs";
 
     private final RestTemplate restTemplate;
+    private final RateLimiter rateLimiter;
+    
+    private final SongRepo songRepo;
 
     @Autowired
-    public GeniusService(RestTemplate restTemplate) {
+    public GeniusService(RestTemplate restTemplate, RateLimiter rateLimiter, SongRepo songRepo) {
         this.restTemplate = restTemplate;
+        this.rateLimiter = rateLimiter;
+        this.songRepo = songRepo;
     }
+    
 
     // Search for Tracks via Genius API for Search Bar
     public List<Map<String, String>> search(String query) {
@@ -215,5 +224,33 @@ public class GeniusService {
         }
 
         return topSongs;
+    }
+
+    public List<Song> fetchAndPersistSongs(List<String> titles, List<String> artists) {
+        List<Song> songs = new ArrayList<>();
+
+        for (int i = 0; i < titles.size(); i++) {
+            if (!rateLimiter.tryAcquire()) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            String title = titles.get(i);
+            String artist = artists.get(i);
+
+            List<Map<String, String>> searchResults = search(title + " " + artist);
+            for (Map<String, String> result : searchResults) {
+                if (result.get("name").equalsIgnoreCase(title) && result.get("artist").equalsIgnoreCase(artist)) {
+                    Song song = getSongDetails(result.get("id"));
+                    songs.add(song);
+                    break;
+                }
+            }
+        }
+
+        songRepo.saveAll(songs);
+        return songs;
     }
 }

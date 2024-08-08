@@ -10,6 +10,7 @@ import com.melodify.Melodify.Models.TopTrack;
 import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Repositories.TopTrackRepo;
 import com.melodify.Melodify.Repositories.UserRepo;
+import com.melodify.Melodify.Services.SongService.SongService;
 import com.melodify.Melodify.Utils.JwtUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,11 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import com.melodify.Melodify.Services.PlaylistService.PlaylistService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +38,8 @@ public class SpotifyApiService {
     private static final String CLIENT_SECRET = EnvironmentConfig.SPOTIFY_CLIENT_SECRET;
     private static final String TOKEN_URL = "https://accounts.spotify.com/api/token";
     private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks"; // Top 50 USA Playlist
+
+    Logger logger = Logger.getLogger(SpotifyApiService.class.getName());
 
     @Autowired
     private UserRepo userRepository;
@@ -47,6 +52,9 @@ public class SpotifyApiService {
 
     @Autowired
     private TopTrackRepo topTrackRepo;
+
+    @Autowired
+    private PlaylistService playlistService;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -97,6 +105,8 @@ public class SpotifyApiService {
                     .map(item -> mapToPlaylist(item, bearerToken))
                     .collect(Collectors.toList());
 
+            // Process each new playlist with PlaylistService
+            playlists.forEach(playlistService::fetchAndPersistSongsFromNewPlaylist);
             savePlaylistsToUser(user, playlists);
         }
 
@@ -142,7 +152,6 @@ public class SpotifyApiService {
                 .collect(Collectors.toList());
     }
 
-    // Save playlists to user
     private void savePlaylistsToUser(User user, List<Playlist> playlists) {
         user.setPlaylists(playlists);
         user.setLastPlaylistSync(new Date());

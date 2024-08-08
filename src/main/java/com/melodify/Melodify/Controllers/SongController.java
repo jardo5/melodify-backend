@@ -62,4 +62,10 @@ public class SongController {
     public String analyzeSentiment(@RequestParam String lyrics) {
         return songService.analyzeSentiment(lyrics);
     }
+    
+    // DO NOT USE THIS ENDPOINT. THIS IS FOR DEVELOPMENT PURPOSES ONLY
+    @GetMapping("/fetch-persist-songs")
+    public List<Song> fetchAndPersistSongs() {
+        return songService.fetchAndPersistSongsFromPlaylistsAndTopCharts();
+    }
 }
