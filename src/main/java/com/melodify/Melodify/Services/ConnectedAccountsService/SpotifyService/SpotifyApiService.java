@@ -90,6 +90,32 @@ public class SpotifyApiService {
         return response.getBody();
     }
 
+    // Get Access Token
+    public String getAccessToken() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                TOKEN_URL,
+                HttpMethod.POST,
+                entity,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Failed to fetch access token: " + response.getStatusCode());
+        }
+
+        return response.getBody().get("access_token").toString();
+    }
+
     // Specific method to get user playlists using the general API call handler
     public List<Playlist> getUserPlaylists(String bearerToken) {
         String token = jwtUtil.extractToken(bearerToken); // Extract token from bearer token
@@ -130,7 +156,7 @@ public class SpotifyApiService {
     }
 
     // Fetches songs for a playlist
-    private List<Song> fetchSongs(String playlistId, String bearerToken) {
+    public List<Song> fetchSongs(String playlistId, String bearerToken) {
         String endpoint = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
         ParameterizedTypeReference<SpotifySongsResponseDTO> responseType = new ParameterizedTypeReference<>() {};
         SpotifySongsResponseDTO tracksResponse = handleSpotifyApiCall(bearerToken, endpoint, HttpMethod.GET, responseType);
@@ -156,32 +182,6 @@ public class SpotifyApiService {
         user.setPlaylists(playlists);
         user.setLastPlaylistSync(new Date());
         userRepository.save(user);
-    }
-
-    // Get Access Token
-    public String getAccessToken() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "client_credentials");
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                TOKEN_URL,
-                HttpMethod.POST,
-                entity,
-                new ParameterizedTypeReference<>() {
-                }
-        );
-
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new RuntimeException("Failed to fetch access token: " + response.getStatusCode());
-        }
-
-        return response.getBody().get("access_token").toString();
     }
 
     // Get Top Songs
@@ -258,4 +258,79 @@ public class SpotifyApiService {
 
         return topTracks;
     }
+
+    // Fetch playlist IDs from featured playlists and specific categories
+    // Used in SongCrawlerService to fetch songs from Spotify. Please read comments on SongCrawlerService for more information.
+    public Map<String, String> fetchPlaylistIdsFromFeaturedPlaylists(String bearerToken) {
+        Map<String, String> playlistsInfo = new HashMap<>();
+
+        // Fetch featured playlists
+        for (int i = 0; i < 5; i++) {
+            int offset = i * 50;
+            String endpoint = "https://api.spotify.com/v1/browse/featured-playlists?limit=50&offset=" + offset;
+
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<>() {};
+            Map<String, Object> response = handleSpotifyApiCall(bearerToken, endpoint, HttpMethod.GET, responseType);
+
+            if (response != null && response.containsKey("playlists")) {
+                Map<String, Object> playlists = (Map<String, Object>) response.get("playlists");
+                List<Map<String, Object>> items = (List<Map<String, Object>>) playlists.get("items");
+
+                for (Map<String, Object> item : items) {
+                    String href = (String) item.get("href");
+                    String name = (String) item.get("name");
+
+                    if (href != null && name != null) {
+                        String playlistId = href.replace("https://api.spotify.com/v1/playlists/", "");
+                        if (!playlistsInfo.containsKey(playlistId)) {
+                            playlistsInfo.put(playlistId, name);
+                        }
+                    }
+                }
+
+                if (items.size() < 50) {
+                    break;
+                }
+            }
+        }
+
+        // Fetch playlists from specific categories
+        List<String> categories = List.of("pop", "rock", "hiphop", "rnb", "blues", "country", "metal", "alternative", "punk", "summer", "indie", "chill", "decades", "gaming", "workout");
+
+        for (String category : categories) {
+            for (int i = 0; i < 5; i++) {
+                int offset = i * 50;
+                String endpoint = String.format("https://api.spotify.com/v1/browse/categories/%s/playlists?limit=50&offset=%d&locale=en_US", category, offset);
+
+                ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<>() {};
+                Map<String, Object> response = handleSpotifyApiCall(bearerToken, endpoint, HttpMethod.GET, responseType);
+
+                if (response != null && response.containsKey("playlists")) {
+                    Map<String, Object> playlists = (Map<String, Object>) response.get("playlists");
+                    List<Map<String, Object>> items = (List<Map<String, Object>>) playlists.get("items");
+
+                    for (Map<String, Object> item : items) {
+                        String href = (String) item.get("href");
+                        String name = (String) item.get("name");
+
+                        if (href != null && name != null) {
+                            String playlistId = href.replace("https://api.spotify.com/v1/playlists/", "");
+                            if (!playlistsInfo.containsKey(playlistId)) {
+                                playlistsInfo.put(playlistId, name);
+                            }
+                        }
+                    }
+
+                    if (items.size() < 50) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return playlistsInfo;
+    }
+
+
+
 }
