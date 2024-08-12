@@ -1,6 +1,5 @@
 package com.melodify.Melodify.Controllers;
 
-import com.melodify.Melodify.Models.Song;
 import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Repositories.UserRepo;
 import com.melodify.Melodify.Services.RecommendationService;
@@ -32,9 +31,7 @@ public class RecommendationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<String>> getRecommendations(@RequestHeader("Authorization") String token,
-                                                           @RequestParam(defaultValue = "0") int offset,
-                                                           @RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<List<String>> getRecommendations(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             logger.error("Authorization token is missing or invalid");
             return ResponseEntity.badRequest().body(null);
@@ -48,10 +45,38 @@ public class RecommendationController {
                 logger.error("User not found: {}", username);
                 return new RuntimeException("User not found");
             });
-            List<String> recommendations = recommendationService.recommendSongsForUser(user.getId(), limit, offset);
+            List<String> recommendations = recommendationService.recommendSongsForUser(user.getId());
             return ResponseEntity.ok(recommendations);
         } catch (Exception e) {
             logger.error("Failed to fetch recommendations", e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<List<String>> refreshRecommendations(@RequestHeader("Authorization") String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            logger.error("Authorization token is missing or invalid");
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        try {
+            String jwtToken = jwtUtil.extractToken(token); // Extract the JWT token
+            String username = jwtUtil.extractUsername(jwtToken); // Extract the username
+            logger.info("Extracted username from token: {}", username);
+            User user = userRepo.findByUsername(username).orElseThrow(() -> {
+                logger.error("User not found: {}", username);
+                return new RuntimeException("User not found");
+            });
+
+            // Refresh the recommendations for the user
+            recommendationService.refreshRecommendationsForUser(user.getId());
+
+            // Fetch the new recommendations to return
+            List<String> refreshedRecommendations = recommendationService.recommendSongsForUser(user.getId());
+            return ResponseEntity.ok(refreshedRecommendations);
+        } catch (Exception e) {
+            logger.error("Failed to refresh recommendations", e);
             return ResponseEntity.status(500).body(null);
         }
     }

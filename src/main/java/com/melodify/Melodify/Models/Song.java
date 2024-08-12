@@ -3,6 +3,7 @@ package com.melodify.Melodify.Models;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 public class Song {
     @Id
     private String id; //id
+    @Indexed
     private String artist; //artist_names
     private String title; //title
     private String fullTitle; //full_title
@@ -30,6 +32,7 @@ public class Song {
     
     // For sentiment analysis
     private String lyrics; //lyrics
+    @Indexed
     private String sentiment; //sentiment
 
     @Data
