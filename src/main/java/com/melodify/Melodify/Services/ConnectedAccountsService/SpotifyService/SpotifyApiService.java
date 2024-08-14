@@ -10,7 +10,6 @@ import com.melodify.Melodify.Models.TopTrack;
 import com.melodify.Melodify.Models.User;
 import com.melodify.Melodify.Repositories.TopTrackRepo;
 import com.melodify.Melodify.Repositories.UserRepo;
-import com.melodify.Melodify.Services.SongService.SongService;
 import com.melodify.Melodify.Utils.JwtUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import com.melodify.Melodify.Services.PlaylistService.PlaylistService;
+import com.melodify.Melodify.Services.PlaylistService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

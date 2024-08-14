@@ -1,4 +1,4 @@
-package com.melodify.Melodify.Services.PlaylistService;
+package com.melodify.Melodify.Services;
 
 import com.melodify.Melodify.DTOs.ArtistWithSongsDTO;
 import com.melodify.Melodify.Models.Playlist;

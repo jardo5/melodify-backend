@@ -161,9 +161,7 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Song is already liked");
             }
 
-            if (user.getDislikedSongs().contains(songId)) {
-                user.getDislikedSongs().remove(songId);
-            }
+            user.getDislikedSongs().remove(songId);
 
             user.getLikedSongs().add(songId);
             userRepo.save(user);
@@ -185,9 +183,7 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Song is already disliked");
             }
 
-            if (user.getLikedSongs().contains(songId)) {
-                user.getLikedSongs().remove(songId);
-            }
+            user.getLikedSongs().remove(songId);
 
             user.getDislikedSongs().add(songId);
             userRepo.save(user);

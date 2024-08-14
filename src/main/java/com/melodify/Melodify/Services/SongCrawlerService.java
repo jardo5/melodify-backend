@@ -9,7 +9,7 @@ import com.melodify.Melodify.Repositories.SongRepo;
 import com.melodify.Melodify.Services.ArtistService.ArtistService;
 import com.melodify.Melodify.Services.ConnectedAccountsService.SpotifyService.SpotifyApiService;
 import com.melodify.Melodify.Services.SongService.SongService;
-import com.melodify.Melodify.Services.PlaylistService.PlaylistService;
+import com.melodify.Melodify.Services.PlaylistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class SongCrawlerService {
     private final SongService songService;
     private final SongRepo songRepo;
     private final ArtistRepo artistRepo;
-    private List<Song> fetchedSongs;
+    private final List<Song> fetchedSongs;
 
     private static final Logger logger = Logger.getLogger(SongCrawlerService.class.getName());
 
