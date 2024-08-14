@@ -1,0 +1,49 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17 (OpenJDK)
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and tag Docker image
+        run: |
+          IMAGE_TAG=${{ github.sha }}-$(date +%s)
+          docker buildx create --use
+          docker buildx build --platform linux/arm64 -t melodify-backend:$IMAGE_TAG --load .
+          docker tag melodify-backend:$IMAGE_TAG 245012075753.dkr.ecr.us-east-1.amazonaws.com/melodify-backend:$IMAGE_TAG
+
+      - name: Push Docker image to Amazon ECR
+        run: |
+          docker push 245012075753.dkr.ecr.us-east-1.amazonaws.com/melodify-backend:$IMAGE_TAG
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update ECS service to use the new image
+        run: |
+          IMAGE_TAG=$(aws ecr describe-images --repository-name melodify-backend --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text)
+          aws ecs update-service --cluster melodify --service melodify-backend-service --force-new-deployment \
+          --region us-east-1 --desired-count 1 --task-definition melodify-backend:$IMAGE_TAG
