@@ -13,8 +13,8 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOriginPattern("https://www.melodify.dev");
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*"); // Use addAllowedOriginPattern instead of addAllowedOrigin
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setMaxAge(3600L); // Optional: Cache the preflight response for 1 hour
