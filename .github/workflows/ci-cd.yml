@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -12,38 +12,68 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Set up JDK 17 (OpenJDK)
-        uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
           java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: Configure AWS Credentials Action for GitHub Actions
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Build and tag Docker image
+      - name: Amazon ECR "Login" Action for GitHub Actions
+        uses: aws-actions/amazon-ecr-login@v2.0.1     
+        with:
+          mask-password: 'true'
+
+      - name: Set IMAGE_TAG
+        id: tag
+        run: echo "IMAGE_TAG=${{ github.sha }}-$(date +%s)" | tee -a $GITHUB_ENV
+
+      - name: Build and tag Docker image for ARM64
         run: |
-          IMAGE_TAG=${{ github.sha }}-$(date +%s)
           docker buildx create --use
-          docker buildx build --platform linux/arm64 -t melodify-backend:$IMAGE_TAG --load .
-          docker tag melodify-backend:$IMAGE_TAG 245012075753.dkr.ecr.us-east-1.amazonaws.com/melodify-backend:$IMAGE_TAG
+          docker buildx build --platform linux/arm64 -t "melodify-backend:${IMAGE_TAG}" .
+          docker tag "melodify-backend:${IMAGE_TAG}" "${{ secrets.ECR_REPOSITORY_URI }}:${IMAGE_TAG}"
 
       - name: Push Docker image to Amazon ECR
-        run: |
-          docker push 245012075753.dkr.ecr.us-east-1.amazonaws.com/melodify-backend:$IMAGE_TAG
+        run: docker push "${{ secrets.ECR_REPOSITORY_URI }}:${IMAGE_TAG}"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Update ECS service to use the new image
         run: |
-          IMAGE_TAG=$(aws ecr describe-images --repository-name melodify-backend --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text)
-          aws ecs update-service --cluster melodify --service melodify-backend-service --force-new-deployment \
-          --region us-east-1 --desired-count 1 --task-definition melodify-backend:$IMAGE_TAG
+          # Fetch the current task definition for melodify-backend-task
+          ecs_task_definition=$(aws ecs describe-task-definition --task-definition melodify-backend-task)
+          
+          # Update the image in the task definition to the new image
+          new_task_definition=$(echo $ecs_task_definition | jq --arg IMAGE_TAG "${IMAGE_TAG}" \
+            '.taskDefinition | .containerDefinitions[0].image="'${{ secrets.ECR_REPOSITORY_URI }}:${IMAGE_TAG}'"')
+          
+          # Clean up unnecessary fields in the new task definition
+          new_task_definition=$(echo $new_task_definition | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          
+          # Register the new task definition
+          aws ecs register-task-definition --cli-input-json "$new_task_definition"
+          
+          # Get the new revision of the task definition
+          new_revision=$(aws ecs describe-task-definition --task-definition melodify-backend-task | jq -r '.taskDefinition.taskDefinitionArn')
+          
+          # Update the ECS service to use the new task definition revision
+          aws ecs update-service --cluster melodify --service melodify-backend-service --task-definition $new_revision --force-new-deployment
