@@ -3,7 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master
+      - master 
+    paths-ignore:
+      - '**/README.md'
+      - '.github/**'
 
 jobs:
   build:
