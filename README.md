@@ -45,7 +45,7 @@ To set up the Melodify backend, follow these steps:
 
 1.**Clone the repository:**    
 ```bash
-    git clone https://github.com/your-repo/melodify-backend.git
+    git clone https://github.com/jardo5/melodify-backend.git
     cd melodify-backend
 ```
 2.**Configure environment variables:**
