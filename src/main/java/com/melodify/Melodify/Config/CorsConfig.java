@@ -14,6 +14,7 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOriginPattern("https://www.melodify.dev");
+        config.addAllowedOriginPattern("https://melodify.dev");
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
